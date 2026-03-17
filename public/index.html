@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <title>WIKI-ROUTER 🖥️ v5.2</title>
+    <title>WIKI-ROUTER 🍎 v5.2</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        /* ... 스타일 부분은 동일하므로 유지 ... */
         :root { --bg: #e0e5ec; --dark: #1a1a1a; --bear: #ff4757; --peng: #3498db; }
         body { margin: 0; background: var(--bg); font-family: 'Malgun Gothic', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
@@ -24,13 +23,19 @@
         .logs { flex: 1; background: rgba(255,255,255,0.4); border-radius: 25px; padding: 15px; margin: 15px; overflow-y: auto; font-size: 0.9rem; border: 1px solid #ccc; box-shadow: inset 4px 4px 10px #bebebe; }
         .msg { background: #e0e5ec; padding: 12px; border-radius: 18px; margin-bottom: 10px; box-shadow: 5px 5px 10px #bebebe; border-left: 6px solid var(--peng); }
         #unlock { position: fixed; inset: 0; background: radial-gradient(circle, #2c3e50, #000); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffeb3b; cursor: pointer; }
+
+        /* --- 중앙 즉시 반응형 스위치 --- */
+        .switch-container { padding: 20px; background: rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; }
+        .slide-track { position: relative; width: 120px; height: 50px; background: #2c3e50; border-radius: 25px; cursor: pointer; border: 2px solid #444; overflow: hidden; }
+        .slide-handle { position: absolute; left: 70px; top: 3px; width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 2px 2px 5px rgba(0,0,0,0.3); pointer-events: none; }
+        .slide-fill { position: absolute; width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
     </style>
 </head>
 <body>
 <div id="unlock"><h1>WIKI-ROUTER v5.2</h1><p>[터치하여 오디오 엔진 가동]</p></div>
 
 <header>
-    <div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div>
+    <div>📡 WIKI-ROUTER <span style="opacity: 0.7;">INSTANT SYNC</span></div>
     <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
 </header>
 
@@ -42,9 +47,13 @@
         </div>
         <div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div>
         
-        <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05);">
-            <div id="status-sub" style="color: #00ff00; font-size: 0.8rem;">💎 ONLINE</div>
-            <button id="hangup-all" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s;">OFF</button>
+        <div class="switch-container">
+            <div id="status-sub" style="color: #00ff00; font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;">💎 ONLINE</div>
+            <div class="slide-track" id="master-switch">
+                <div id="slide-fill" class="slide-fill"></div>
+                <div id="slide-handle" class="slide-handle">📞</div>
+            </div>
+            <div id="slider-text" style="color: #888; font-size: 0.7rem; margin-top: 8px;">INSTANT SWITCH</div>
         </div>
     </section>
 
@@ -60,77 +69,74 @@
     </section>
 </main>
 
-
-
-
-
-
-
-
 <script>
     const socket = io();
     const peer = new Peer({ host: location.hostname, port: location.port || 3000, path: '/peerjs' });
     let myStream, calls = [], rec, chunks = [], isBusy = false;
-    
-    // isConnected는 이제 'BEAR(무전기)'의 활성화 상태를 나타냅니다.
     let isBearActive = true; 
 
-    // 초기 연결
     peer.on('open', (id) => socket.emit('register-peer', id));
 
-    /* --- 수정된 종료/재가동 버튼 로직 --- */
-    const hangupBtn = document.getElementById('hangup-all');
+    /* --- 컨펌창 없는 즉시 전환 스위치 로직 --- */
+    const masterSwitch = document.getElementById('master-switch');
+    const handle = document.getElementById('slide-handle');
+    const fill = document.getElementById('slide-fill');
+    const statusSub = document.getElementById('status-sub');
+    const bStat = document.getElementById('b-stat');
+    const bTrig = document.getElementById('b-trig');
 
-    hangupBtn.onclick = () => {
+    masterSwitch.onclick = () => {
         if (isBearActive) {
-            if (confirm("실시간 무전(BEAR) 통신만 종료하시겠습니까?\n(PENG 동기화 라인은 유지됩니다)")) {
-                // 1. 실시간 통화(RTC)만 종료하고 배열 비우기
-                calls.forEach(c => c.close());
-                calls = [];
-                
-                // [중요] peer.destroy()와 socket.disconnect()를 삭제하여 통신망을 유지합니다.
+            // [OFF 전환] 컨펌창 없이 즉시 실행
+            isBearActive = false;
+            calls.forEach(c => c.close());
+            calls = [];
 
-                // 2. UI 상태 업데이트 (BEAR 전원 꺼짐 표시)
-                isBearActive = false;
-                document.getElementById('status-sub').innerText = "BEAR-OFFLINE";
-                document.getElementById('status-sub').style.color = "#ff4757";
-                document.getElementById('b-stat').innerText = "OFF";
-                
-                // 3. 버튼을 다시 켜는(ON) 모드로 변경
-                hangupBtn.innerText = "ON";
-                hangupBtn.style.background = "#2ecc71"; // 녹색
-                document.getElementById('b-trig').style.opacity = "0.3"; // 무전기 버튼 반투명
-            }
+            // UI 즉시 업데이트 (왼쪽 이동)
+            handle.style.left = '5px';
+            handle.innerText = "🔌";
+            fill.style.width = '0%';
+            fill.style.background = '#ff4757';
+            
+            statusSub.innerText = "BEAR-OFFLINE";
+            statusSub.style.color = "#ff4757";
+            bStat.innerText = "OFF";
+            bTrig.style.opacity = "0.3";
+            bTrig.style.pointerEvents = "none";
         } else {
-            // OFF 상태에서 누르면 BEAR 무전기만 다시 활성화
+            // [ON 전환] 즉시 실행
             isBearActive = true;
-            document.getElementById('status-sub').innerText = "💎 ONLINE";
-            document.getElementById('status-sub').style.color = "#00ff00";
-            document.getElementById('b-stat').innerText = "READY";
-            hangupBtn.innerText = "OFF";
-            hangupBtn.style.background = "#ff4757"; // 빨간색
-            document.getElementById('b-trig').style.opacity = "1";
+
+            // UI 즉시 업데이트 (오른쪽 이동)
+            handle.style.left = '70px';
+            handle.innerText = "📞";
+            fill.style.width = '100%';
+            fill.style.background = '#2ecc71';
+
+            statusSub.innerText = "💎 ONLINE";
+            statusSub.style.color = "#00ff00";
+            bStat.innerText = "READY";
+            bTrig.style.opacity = "1";
+            bTrig.style.pointerEvents = "auto";
         }
     };
 
-    /* --- 오디오 엔진 가동 --- */
+    /* --- 기본 엔진 로직 --- */
     document.getElementById('unlock').onclick = function() {
         this.style.display = 'none';
         document.getElementById('status').innerText = "💎 ONLINE";
     };
 
-    /* --- BEAR (실시간) 로직: isBearActive 체크 --- */
     const startBear = async () => {
-        if(!isBearActive || isBusy) return; // 무전기가 꺼져있으면 작동 안함
+        if(!isBearActive || isBusy) return;
         isBusy = true;
         document.getElementById('b-stat').innerText = "STREAMING...";
         if (!myStream) myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         socket.emit('get-peers');
     };
 
-    /* --- PENG (녹음 동기화) 로직: BEAR 상태와 무관하게 작동 --- */
     const startPeng = async () => {
-        if(isBusy) return; // 사용 중인지만 체크 (BEAR가 꺼져있어도 작동함)
+        if(isBusy) return;
         isBusy = true; chunks = [];
         const s = await navigator.mediaDevices.getUserMedia({ audio: true });
         rec = new MediaRecorder(s, { mimeType: 'audio/webm' });
@@ -151,7 +157,6 @@
         isBusy = false;
     };
 
-    /* 이벤트 바인딩 (동일) */
     document.getElementById('b-trig').onmousedown = startBear;
     document.getElementById('p-trig').onmousedown = startPeng;
     window.onmouseup = stopAll;
@@ -159,7 +164,6 @@
     document.getElementById('p-trig').ontouchstart = startPeng;
     window.ontouchend = stopAll;
 
-    /* 소켓 및 RTC 수신부 (동일) */
     socket.on('peer-list', (list) => {
         list.forEach(tid => { if(tid !== peer.id) calls.push(peer.call(tid, myStream)); });
     });
@@ -183,16 +187,9 @@
     }
 
     document.getElementById('clear-btn').onclick = () => {
-        if(confirm("로그를 모두 삭제하시겠습니까?")) {
-            socket.emit('clear-logs-signal');
-            document.getElementById('l-box').innerHTML = '';
-        }
+        socket.emit('clear-logs-signal');
+        document.getElementById('l-box').innerHTML = '';
     };
 </script>
-
-
-
-
-
 </body>
 </html>
