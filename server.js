@@ -1,4 +1,4 @@
-/* [SRV(🏗️🏗️🏗️)] WIKI-ROUTER v5.1 CORE ENGINE */
+/* [SRV(🏗️🏗️🏗️)] WIKI-ROUTER v5.2 CORE ENGINE */
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -43,45 +43,24 @@ io.on('connection', (socket) => {
         socket.myPeerId = id;
         peerList.add(id);
         console.log(`📡 [SIO_S] 입성: ${penguinId} (Peer: ${id})`);
+        // 새로운 유저 입장을 모두에게 알림 (필요시)
+        io.emit('peer-joined', id);
     });
-
-
-
-
 
     // 🐻 BEAR: 실시간 타겟 리스트 요청 응답
     socket.on('get-peers', () => {
         socket.emit('peer-list', Array.from(peerList));
     });
 
-
-
-
-
-    // 🐧 PENG: 무전기 음성 파일 동기화 (BLOB 처리)
+    // 🐧 PENG: 무전기 음성 파일 동기화
     socket.on('sync-audio-file', (data) => {
         if (!data || !data.blob) return;
         
-        // 📢 EV: 전역 브로드캐스팅
         socket.broadcast.emit('receive-sync-audio', { 
             blob: data.blob, 
             id: penguinId 
         });
 
-// server.js 소켓 로직 내부
-socket.on('disconnect', () => {
-    if (socket.myPeerId) {
-        peerList.delete(socket.myPeerId);
-        // 연결이 끊겼을 때 다른 사용자들에게 알림을 보낼 수도 있습니다.
-        io.emit('peer-left', socket.myPeerId); 
-    }
-    console.log(`👋 [퇴장] ${penguinId}`);
-});
-
-
-
-
-        // 서버 파일 저장 및 순환
         const fName = `voice_${penguinId}_${Date.now()}.webm`;
         fs.writeFile(path.join(recDir, fName), Buffer.from(data.blob), (err) => {
             if (!err) rotateLogs();
@@ -96,13 +75,20 @@ socket.on('disconnect', () => {
         io.emit('logs-cleared-notification', { by: penguinId });
     });
 
+    // 🔌 DISCONNECT: 통합 연결 종료 로직 (중복 제거)
     socket.on('disconnect', () => {
-        if (socket.myPeerId) peerList.delete(socket.myPeerId);
-        console.log(`👋 [퇴장] ${penguinId}`);
+        if (socket.myPeerId) {
+            peerList.delete(socket.myPeerId);
+            // 리스트에서 삭제되었음을 전역 알림
+            io.emit('peer-left', socket.myPeerId); 
+            console.log(`👋 [퇴장] Peer: ${socket.myPeerId} (Socket: ${penguinId})`);
+        } else {
+            console.log(`👋 [퇴장] Socket: ${penguinId}`);
+        }
     });
 });
 
 const PORT = 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 [WIKI-ROUTER v5.1] ONLINE: http://localhost:${PORT}`);
+    console.log(`🚀 [WIKI-ROUTER v5.2] ONLINE: http://localhost:${PORT}`);
 });

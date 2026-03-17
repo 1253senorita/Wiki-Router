@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>BEAR-Talkie (PeerJS)</title>
+    <title>BEAR-Talkie v5.2</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -12,20 +12,22 @@
         .vu-meter { display: flex; align-items: flex-end; gap: 4px; height: 50px; margin-bottom: 10px; }
         .bar { width: 8px; height: 5px; background: #00ff00; border-radius: 1px; transition: height 0.05s; }
         .chat-zone { flex: 2; background: #111; border-radius: 8px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; border: 1px solid #333; }
-        .control-zone { flex: 1; display: flex; justify-content: center; align-items: center; }
-        .ptt-btn { width: 120px; height: 120px; border-radius: 50%; border: none; background: radial-gradient(circle, #ff4b2b, #ff416c); color: #fff; font-weight: bold; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .ptt-btn:active { background: #f00; transform: scale(0.95); }
+        
+        .control-zone { flex: 1; display: flex; justify-content: center; align-items: center; gap: 25px; }
+        .ptt-btn { width: 120px; height: 120px; border-radius: 50%; border: none; background: radial-gradient(circle, #ff4b2b, #ff416c); color: #fff; font-weight: bold; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: 0.1s; box-shadow: 0 0 20px rgba(255, 75, 43, 0.3); }
+        .ptt-btn:active { background: #f00; transform: scale(0.95); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .ptt-btn:disabled { background: #444; opacity: 0.3; cursor: not-allowed; }
+
+        .hangup-btn { 
+            width: 60px; height: 60px; border-radius: 50%; border: none; 
+            background: #333; color: #ff4757; font-size: 1.5rem; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s;
+        }
+        .hangup-btn.on-mode { background: #2ecc71; color: #fff; }
+        .hangup-btn:active { transform: scale(0.9); }
+
         #audio-unlock { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 12px; font-weight: bold; color: #ffeb3b; }
-
-/* ... 기존 스타일 ... */
-    .hangup-btn { 
-        width: 50px; height: 50px; border-radius: 50%; border: none; 
-        background: #333; color: #ff4757; font-size: 1.5rem; cursor: pointer; 
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
-    .hangup-btn:active { transform: scale(0.9); background: #000; }
-
     </style>
 </head>
 <body>
@@ -39,33 +41,29 @@
             <div id="status-display" style="font-size: 1.5rem; font-weight: bold;">STANDBY</div>
             <div id="my-id" style="font-size: 0.8rem; color: #888; margin-top: 10px;">ID 연결 중...</div>
         </div>
-        <div class="chat-zone" id="chat-box"></div>
+
+        <div class="chat-zone" id="chat-box">
+            <div style="color:#555; font-size: 0.8rem; text-align: center;">--- 실시간 로그 시작 ---</div>
+        </div>
+
         <div class="control-zone">
             <button class="ptt-btn" id="ptt-trigger">PTT ON</button>
+            <button class="hangup-btn" id="hangup-trigger" title="연결 종료">✕</button>
         </div>
-<div class="control-zone" style="gap: 20px;">
-    <button class="ptt-btn" id="ptt-trigger">PTT ON</button>
-    <button class="hangup-btn" id="hangup-trigger" title="연결 종료">✕</button>
-</div>
-
     </div>
 
 <script>
     const socket = io();
     const pttBtn = document.getElementById('ptt-trigger');
+    const hangupBtn = document.getElementById('hangup-trigger');
     const display = document.getElementById('status-display');
     const myIdTag = document.getElementById('my-id');
-    const bars = document.querySelectorAll('.bar');
-const hangupBtn = document.getElementById('hangup-trigger');
-
-
-
+    
     let myStream, activeCalls = [];
-    let audioContext;
+    let isConnected = true;
 
     // 1. PeerJS 초기화
     const peer = new Peer();
-
     peer.on('open', (id) => {
         myIdTag.innerText = "MY ID: " + id;
         socket.emit('register-peer', id);
@@ -80,24 +78,21 @@ const hangupBtn = document.getElementById('hangup-trigger');
     });
 
     function playStream(stream) {
-        // 기존 오디오 객체 생성 및 자동 재생 방지 우회
         const audio = new Audio();
         audio.srcObject = stream;
-        
         display.innerText = "RECEIVING...";
         display.style.color = "#00ff00";
-
         audio.play().catch(err => console.error("재생 실패:", err));
 
-        // 스트림 종료 시 상태 복구
         stream.onremovetrack = () => {
             display.innerText = "STANDBY";
             display.style.color = "#fff";
         };
     }
 
-    // 3. 음성 송신 (PTT) - mousedown/touchstart 지원
+    // 3. 음성 송신 (PTT)
     const startTalking = async (e) => {
+        if(!isConnected) return;
         e.preventDefault();
         if (!myStream) {
             try {
@@ -107,19 +102,20 @@ const hangupBtn = document.getElementById('hangup-trigger');
                 return;
             }
         }
-        
         display.innerText = "TALKING...";
         display.style.color = "#ff4b2b";
         socket.emit('get-peers');
     };
 
     const stopTalking = () => {
+        if(!isConnected) return;
         activeCalls.forEach(call => call.close());
         activeCalls = [];
         display.innerText = "STANDBY";
         display.style.color = "#fff";
     };
 
+    // 이벤트 리스너 통합
     pttBtn.addEventListener('mousedown', startTalking);
     window.addEventListener('mouseup', stopTalking);
     pttBtn.addEventListener('touchstart', startTalking);
@@ -134,36 +130,38 @@ const hangupBtn = document.getElementById('hangup-trigger');
         });
     });
 
-hangupBtn.onclick = () => {
-        if (peer) {
-            // 1. 모든 진행 중인 호출 종료
-            activeCalls.forEach(call => call.close());
-            activeCalls = [];
-            
-            // 2. PeerJS 서버 연결 해제 (ID 반납)
-            peer.destroy(); 
-            
-            // 3. UI 업데이트
-            display.innerText = "DISCONNECTED";
-            display.style.color = "#ff4757";
-            myIdTag.innerText = "통신이 종료되었습니다.";
-            pttBtn.disabled = true;
-            pttBtn.style.opacity = "0.5";
-            
-            console.log("RTC Router Connection Closed.");
+    // 4. 전원 종료 및 재가동 로직
+    hangupBtn.onclick = () => {
+        if (isConnected) {
+            if (confirm("통신망에서 완전히 이탈하시겠습니까?")) {
+                activeCalls.forEach(call => call.close());
+                activeCalls = [];
+                peer.destroy(); 
+                socket.disconnect();
+
+                isConnected = false;
+                display.innerText = "OFFLINE";
+                display.style.color = "#ff4757";
+                myIdTag.innerText = "통신 중단됨";
+                
+                // 버튼을 ON 상태로 변경
+                hangupBtn.innerText = "ON";
+                hangupBtn.classList.add('on-mode');
+                pttBtn.disabled = true;
+            }
+        } else {
+            // 다시 켜기 (새로고침)
+            location.reload();
         }
     };
 
-    // 시스템 활성화 버튼 (AudioContext 및 오디오 잠금 해제)
+    // 시스템 활성화
     document.getElementById('audio-unlock').addEventListener('click', function() {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         audioContext.resume();
         this.style.display = 'none';
         console.log("System Ready");
     });
-
-
-
 </script>
 </body>
 </html>

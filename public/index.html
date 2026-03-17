@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <title>WIKI-ROUTER 🖥️ v5.1</title>
+    <title>WIKI-ROUTER 🖥️ v5.2</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* ... 스타일 부분은 동일하므로 유지 ... */
         :root { --bg: #e0e5ec; --dark: #1a1a1a; --bear: #ff4757; --peng: #3498db; }
         body { margin: 0; background: var(--bg); font-family: 'Malgun Gothic', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
@@ -26,35 +27,111 @@
     </style>
 </head>
 <body>
-<div id="unlock"><h1>WIKI-ROUTER v5.1</h1><p>[터치하여 오디오 엔진 가동]</p></div>
+<div id="unlock"><h1>WIKI-ROUTER v5.2</h1><p>[터치하여 오디오 엔진 가동]</p></div>
 
+<header>
+    <div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div>
+    <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
+</header>
 
-<header><div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div><div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div></header>
 <main class="main-app">
-    <section class="card bear-box"><div class="v-zone"><div class="vu"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-<div class="bar"></div></div><div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div></div><div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div><div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div>
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
-        <button id="hangup-all" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">OFF</button>
-    </div></section>
-    <section class="card"><div style="padding:20px; display:flex; justify-content:space-between;"><span>🐧 PENG: SYNC PTT</span><button id="clear-btn">🗑️</button></div><div class="p-btn-zone"><button id="p-trig"><span style="font-size:5rem;">🐧</span></button></div><div class="logs" id="l-box"></div></section>
+    <section class="card bear-box">
+        <div class="v-zone">
+            <div class="vu"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            <div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div>
+        </div>
+        <div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div>
+        
+        <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05);">
+            <div id="status-sub" style="color: #00ff00; font-size: 0.8rem;">💎 ONLINE</div>
+            <button id="hangup-all" style="background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s;">OFF</button>
+        </div>
+    </section>
+
+    <section class="card">
+        <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
+            <span>🐧 PENG: SYNC PTT</span>
+            <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
+        </div>
+        <div class="p-btn-zone" style="height: 250px; display: flex; justify-content: center; align-items: center;">
+            <button id="p-trig"><span style="font-size:5rem;">🐧</span></button>
+        </div>
+        <div class="logs" id="l-box"></div>
+    </section>
 </main>
+
+
+
+
+
+
+
+
 <script>
     const socket = io();
     const peer = new Peer({ host: location.hostname, port: location.port || 3000, path: '/peerjs' });
     let myStream, calls = [], rec, chunks = [], isBusy = false;
+    
+    // isConnected는 이제 'BEAR(무전기)'의 활성화 상태를 나타냅니다.
+    let isBearActive = true; 
 
+    // 초기 연결
     peer.on('open', (id) => socket.emit('register-peer', id));
 
+    /* --- 수정된 종료/재가동 버튼 로직 --- */
+    const hangupBtn = document.getElementById('hangup-all');
+
+    hangupBtn.onclick = () => {
+        if (isBearActive) {
+            if (confirm("실시간 무전(BEAR) 통신만 종료하시겠습니까?\n(PENG 동기화 라인은 유지됩니다)")) {
+                // 1. 실시간 통화(RTC)만 종료하고 배열 비우기
+                calls.forEach(c => c.close());
+                calls = [];
+                
+                // [중요] peer.destroy()와 socket.disconnect()를 삭제하여 통신망을 유지합니다.
+
+                // 2. UI 상태 업데이트 (BEAR 전원 꺼짐 표시)
+                isBearActive = false;
+                document.getElementById('status-sub').innerText = "BEAR-OFFLINE";
+                document.getElementById('status-sub').style.color = "#ff4757";
+                document.getElementById('b-stat').innerText = "OFF";
+                
+                // 3. 버튼을 다시 켜는(ON) 모드로 변경
+                hangupBtn.innerText = "ON";
+                hangupBtn.style.background = "#2ecc71"; // 녹색
+                document.getElementById('b-trig').style.opacity = "0.3"; // 무전기 버튼 반투명
+            }
+        } else {
+            // OFF 상태에서 누르면 BEAR 무전기만 다시 활성화
+            isBearActive = true;
+            document.getElementById('status-sub').innerText = "💎 ONLINE";
+            document.getElementById('status-sub').style.color = "#00ff00";
+            document.getElementById('b-stat').innerText = "READY";
+            hangupBtn.innerText = "OFF";
+            hangupBtn.style.background = "#ff4757"; // 빨간색
+            document.getElementById('b-trig').style.opacity = "1";
+        }
+    };
+
+    /* --- 오디오 엔진 가동 --- */
+    document.getElementById('unlock').onclick = function() {
+        this.style.display = 'none';
+        document.getElementById('status').innerText = "💎 ONLINE";
+    };
+
+    /* --- BEAR (실시간) 로직: isBearActive 체크 --- */
     const startBear = async () => {
-        if(isBusy) return; isBusy = true;
+        if(!isBearActive || isBusy) return; // 무전기가 꺼져있으면 작동 안함
+        isBusy = true;
         document.getElementById('b-stat').innerText = "STREAMING...";
         if (!myStream) myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         socket.emit('get-peers');
     };
 
+    /* --- PENG (녹음 동기화) 로직: BEAR 상태와 무관하게 작동 --- */
     const startPeng = async () => {
-        if(isBusy) return; isBusy = true; chunks = [];
+        if(isBusy) return; // 사용 중인지만 체크 (BEAR가 꺼져있어도 작동함)
+        isBusy = true; chunks = [];
         const s = await navigator.mediaDevices.getUserMedia({ audio: true });
         rec = new MediaRecorder(s, { mimeType: 'audio/webm' });
         rec.ondataavailable = e => chunks.push(e.data);
@@ -69,15 +146,20 @@
 
     const stopAll = () => {
         if(!isBusy) return;
-        document.getElementById('b-stat').innerText = "READY";
+        document.getElementById('b-stat').innerText = isBearActive ? "READY" : "OFF";
         if(rec && rec.state === "recording") rec.stop();
         isBusy = false;
     };
 
+    /* 이벤트 바인딩 (동일) */
     document.getElementById('b-trig').onmousedown = startBear;
     document.getElementById('p-trig').onmousedown = startPeng;
     window.onmouseup = stopAll;
+    document.getElementById('b-trig').ontouchstart = startBear;
+    document.getElementById('p-trig').ontouchstart = startPeng;
+    window.ontouchend = stopAll;
 
+    /* 소켓 및 RTC 수신부 (동일) */
     socket.on('peer-list', (list) => {
         list.forEach(tid => { if(tid !== peer.id) calls.push(peer.call(tid, myStream)); });
     });
@@ -100,24 +182,17 @@
         document.getElementById('l-box').prepend(d);
     }
 
-    document.getElementById('unlock').onclick = function() {
-        this.style.display = 'none';
-        document.getElementById('status').innerText = "💎 ONLINE";
-    };
-
-// ... 기존 코드 하단에 추가 ...
-    document.getElementById('hangup-all').onclick = () => {
-        if (confirm("모든 통신 연결을 종료하시겠습니까?")) {
-            peer.destroy(); // PeerJS 연결 파괴 (모든 호스트 연결 해제)
-            socket.disconnect(); // Socket.io 연결 해제
-            document.getElementById('status').innerText = "💀 OFFLINE";
-            document.getElementById('status').style.color = "#ff4757";
-            alert("시스템이 종료되었습니다. 재접속하려면 새로고침하세요.");
+    document.getElementById('clear-btn').onclick = () => {
+        if(confirm("로그를 모두 삭제하시겠습니까?")) {
+            socket.emit('clear-logs-signal');
+            document.getElementById('l-box').innerHTML = '';
         }
     };
-
-
-
 </script>
+
+
+
+
+
 </body>
 </html>
