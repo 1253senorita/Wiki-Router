@@ -16,6 +16,16 @@
         .ptt-btn { width: 120px; height: 120px; border-radius: 50%; border: none; background: radial-gradient(circle, #ff4b2b, #ff416c); color: #fff; font-weight: bold; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
         .ptt-btn:active { background: #f00; transform: scale(0.95); }
         #audio-unlock { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 12px; font-weight: bold; color: #ffeb3b; }
+
+/* ... 기존 스타일 ... */
+    .hangup-btn { 
+        width: 50px; height: 50px; border-radius: 50%; border: none; 
+        background: #333; color: #ff4757; font-size: 1.5rem; cursor: pointer; 
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .hangup-btn:active { transform: scale(0.9); background: #000; }
+
     </style>
 </head>
 <body>
@@ -33,6 +43,11 @@
         <div class="control-zone">
             <button class="ptt-btn" id="ptt-trigger">PTT ON</button>
         </div>
+<div class="control-zone" style="gap: 20px;">
+    <button class="ptt-btn" id="ptt-trigger">PTT ON</button>
+    <button class="hangup-btn" id="hangup-trigger" title="연결 종료">✕</button>
+</div>
+
     </div>
 
 <script>
@@ -41,6 +56,9 @@
     const display = document.getElementById('status-display');
     const myIdTag = document.getElementById('my-id');
     const bars = document.querySelectorAll('.bar');
+const hangupBtn = document.getElementById('hangup-trigger');
+
+
 
     let myStream, activeCalls = [];
     let audioContext;
@@ -116,6 +134,26 @@
         });
     });
 
+hangupBtn.onclick = () => {
+        if (peer) {
+            // 1. 모든 진행 중인 호출 종료
+            activeCalls.forEach(call => call.close());
+            activeCalls = [];
+            
+            // 2. PeerJS 서버 연결 해제 (ID 반납)
+            peer.destroy(); 
+            
+            // 3. UI 업데이트
+            display.innerText = "DISCONNECTED";
+            display.style.color = "#ff4757";
+            myIdTag.innerText = "통신이 종료되었습니다.";
+            pttBtn.disabled = true;
+            pttBtn.style.opacity = "0.5";
+            
+            console.log("RTC Router Connection Closed.");
+        }
+    };
+
     // 시스템 활성화 버튼 (AudioContext 및 오디오 잠금 해제)
     document.getElementById('audio-unlock').addEventListener('click', function() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -123,6 +161,9 @@
         this.style.display = 'none';
         console.log("System Ready");
     });
+
+
+
 </script>
 </body>
 </html>

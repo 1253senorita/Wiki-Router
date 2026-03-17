@@ -27,9 +27,16 @@
 </head>
 <body>
 <div id="unlock"><h1>WIKI-ROUTER v5.1</h1><p>[터치하여 오디오 엔진 가동]</p></div>
+
+
 <header><div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div><div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div></header>
 <main class="main-app">
-    <section class="card bear-box"><div class="v-zone"><div class="vu"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div><div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div></div><div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div></section>
+    <section class="card bear-box"><div class="v-zone"><div class="vu"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+<div class="bar"></div></div><div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div></div><div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div><div>📡 WIKI-ROUTER <span style="opacity: 0.7;">DUAL SYNC</span></div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
+        <button id="hangup-all" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">OFF</button>
+    </div></section>
     <section class="card"><div style="padding:20px; display:flex; justify-content:space-between;"><span>🐧 PENG: SYNC PTT</span><button id="clear-btn">🗑️</button></div><div class="p-btn-zone"><button id="p-trig"><span style="font-size:5rem;">🐧</span></button></div><div class="logs" id="l-box"></div></section>
 </main>
 <script>
@@ -97,6 +104,20 @@
         this.style.display = 'none';
         document.getElementById('status').innerText = "💎 ONLINE";
     };
+
+// ... 기존 코드 하단에 추가 ...
+    document.getElementById('hangup-all').onclick = () => {
+        if (confirm("모든 통신 연결을 종료하시겠습니까?")) {
+            peer.destroy(); // PeerJS 연결 파괴 (모든 호스트 연결 해제)
+            socket.disconnect(); // Socket.io 연결 해제
+            document.getElementById('status').innerText = "💀 OFFLINE";
+            document.getElementById('status').style.color = "#ff4757";
+            alert("시스템이 종료되었습니다. 재접속하려면 새로고침하세요.");
+        }
+    };
+
+
+
 </script>
 </body>
 </html>

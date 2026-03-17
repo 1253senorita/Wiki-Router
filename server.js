@@ -45,10 +45,18 @@ io.on('connection', (socket) => {
         console.log(`📡 [SIO_S] 입성: ${penguinId} (Peer: ${id})`);
     });
 
+
+
+
+
     // 🐻 BEAR: 실시간 타겟 리스트 요청 응답
     socket.on('get-peers', () => {
         socket.emit('peer-list', Array.from(peerList));
     });
+
+
+
+
 
     // 🐧 PENG: 무전기 음성 파일 동기화 (BLOB 처리)
     socket.on('sync-audio-file', (data) => {
@@ -59,6 +67,19 @@ io.on('connection', (socket) => {
             blob: data.blob, 
             id: penguinId 
         });
+
+// server.js 소켓 로직 내부
+socket.on('disconnect', () => {
+    if (socket.myPeerId) {
+        peerList.delete(socket.myPeerId);
+        // 연결이 끊겼을 때 다른 사용자들에게 알림을 보낼 수도 있습니다.
+        io.emit('peer-left', socket.myPeerId); 
+    }
+    console.log(`👋 [퇴장] ${penguinId}`);
+});
+
+
+
 
         // 서버 파일 저장 및 순환
         const fName = `voice_${penguinId}_${Date.now()}.webm`;
