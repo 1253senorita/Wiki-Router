@@ -7,6 +7,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* [기존 디자인 값 유지] */
         :root { --bg: #e0e5ec; --dark: #1a1a1a; --bear: #ff4757; --peng: #3498db; }
         body { margin: 0; background: var(--bg); font-family: 'Malgun Gothic', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
@@ -22,16 +23,47 @@
         #p-trig:active { box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff; transform: scale(0.95); }
         .logs { flex: 1; background: rgba(255,255,255,0.4); border-radius: 25px; padding: 15px; margin: 15px; overflow-y: auto; font-size: 0.9rem; border: 1px solid #ccc; box-shadow: inset 4px 4px 10px #bebebe; }
         .msg { background: #e0e5ec; padding: 12px; border-radius: 18px; margin-bottom: 10px; box-shadow: 5px 5px 10px #bebebe; border-left: 6px solid var(--peng); }
-        #unlock { position: fixed; inset: 0; background: radial-gradient(circle, #2c3e50, #000); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffeb3b; cursor: pointer; }
+        #unlock { position: fixed; inset: 0; background: radial-gradient(circle, #2c3e50, #000); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ffeb3b; cursor: pointer; }
 
-        /* --- 중앙 즉시 반응형 스위치 --- */
+        /* --- 중앙 즉시 반응형 스위치 디자인 유지 --- */
         .switch-container { padding: 20px; background: rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; }
         .slide-track { position: relative; width: 120px; height: 50px; background: #2c3e50; border-radius: 25px; cursor: pointer; border: 2px solid #444; overflow: hidden; }
         .slide-handle { position: absolute; left: 70px; top: 3px; width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 2px 2px 5px rgba(0,0,0,0.3); pointer-events: none; }
         .slide-fill { position: absolute; width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
+
+        /* --- [신규] 독립 가입 화면 스타일 --- */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 2000; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .auth-box {
+            background: var(--bg); padding: 40px; border-radius: 40px;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            text-align: center; width: 280px;
+        }
+        .auth-box input {
+            width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 20px;
+            background: var(--bg); box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
+            outline: none; box-sizing: border-box;
+        }
+        #join-btn {
+            width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 20px;
+            background: var(--bear); color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
+
+<div id="auth-screen">
+    <div class="auth-box">
+        <h1 style="color:var(--dark); margin-bottom: 30px;">JOIN 🍎</h1>
+        <input type="text" id="join-id" placeholder="ID 입력">
+        <input type="password" placeholder="PW 입력">
+        <button id="join-btn">가입 및 시스템 시작</button>
+    </div>
+</div>
+
 <div id="unlock"><h1>WIKI-ROUTER v5.2</h1><p>[터치하여 오디오 엔진 가동]</p></div>
 
 <header>
@@ -46,7 +78,6 @@
             <div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div>
         </div>
         <div class="b-btn-zone"><button class="b-btn" id="b-trig">TALK</button></div>
-        
         <div class="switch-container">
             <div id="status-sub" style="color: #00ff00; font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;">💎 ONLINE</div>
             <div class="slide-track" id="master-switch">
@@ -70,14 +101,30 @@
 </main>
 
 <script>
+    /* [통신 및 기존 변수 유지] */
     const socket = io();
     const peer = new Peer({ host: location.hostname, port: location.port || 3000, path: '/peerjs' });
     let myStream, calls = [], rec, chunks = [], isBusy = false;
     let isBearActive = true; 
 
+    /* --- [가입 로직 분리] --- */
+    const authScreen = document.getElementById('auth-screen');
+    const unlockScreen = document.getElementById('unlock');
+    const joinBtn = document.getElementById('join-btn');
+
+    joinBtn.onclick = () => {
+        const idVal = document.getElementById('join-id').value;
+        if(idVal.trim() === "") return alert("ID를 입력하세요!");
+        
+        // 1. 가입 창 걷어내기
+        authScreen.style.display = 'none';
+        // 2. 기존 언락 화면 띄우기 (여기서부터 기존 로직 시작)
+        unlockScreen.style.display = 'flex';
+    };
+
+    /* --- [기존 로직 유지] --- */
     peer.on('open', (id) => socket.emit('register-peer', id));
 
-    /* --- 컨펌창 없는 즉시 전환 스위치 로직 --- */
     const masterSwitch = document.getElementById('master-switch');
     const handle = document.getElementById('slide-handle');
     const fill = document.getElementById('slide-fill');
@@ -87,32 +134,24 @@
 
     masterSwitch.onclick = () => {
         if (isBearActive) {
-            // [OFF 전환] 컨펌창 없이 즉시 실행
             isBearActive = false;
             calls.forEach(c => c.close());
             calls = [];
-
-            // UI 즉시 업데이트 (왼쪽 이동)
             handle.style.left = '5px';
             handle.innerText = "🔌";
             fill.style.width = '0%';
             fill.style.background = '#ff4757';
-            
             statusSub.innerText = "BEAR-OFFLINE";
             statusSub.style.color = "#ff4757";
             bStat.innerText = "OFF";
             bTrig.style.opacity = "0.3";
             bTrig.style.pointerEvents = "none";
         } else {
-            // [ON 전환] 즉시 실행
             isBearActive = true;
-
-            // UI 즉시 업데이트 (오른쪽 이동)
             handle.style.left = '70px';
             handle.innerText = "📞";
             fill.style.width = '100%';
             fill.style.background = '#2ecc71';
-
             statusSub.innerText = "💎 ONLINE";
             statusSub.style.color = "#00ff00";
             bStat.innerText = "READY";
@@ -121,8 +160,7 @@
         }
     };
 
-    /* --- 기본 엔진 로직 --- */
-    document.getElementById('unlock').onclick = function() {
+    unlockScreen.onclick = function() {
         this.style.display = 'none';
         document.getElementById('status').innerText = "💎 ONLINE";
     };
