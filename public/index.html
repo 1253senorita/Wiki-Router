@@ -57,12 +57,26 @@
 
 <div id="auth-screen">
     <div class="auth-box">
-        <h1 style="color:var(--dark); margin-bottom: 30px;">JOIN 🍎</h1>
+        <h1 style="color:var(--dark); margin-bottom: 25px; font-size: 2.5rem;">JOIN 🍎</h1>
+        
         <input type="text" id="join-id" placeholder="ID 입력">
-        <input type="password" placeholder="PW 입력">
-        <button id="join-btn">가입 및 시스템 시작</button>
+        <input type="password" id="join-pw" placeholder="PW 입력">
+
+        <div class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0;">
+            <button onclick="selectMode('DEV_MASTER')" class="neo-btn" style="padding: 10px 5px; font-size: 0.75rem;">호텔객실</button>
+            <button onclick="selectMode('GUEST_USER')" class="neo-btn" style="padding: 10px 5px; font-size: 0.75rem;">일반룸</button>
+            <button onclick="selectMode('NORMAL_USER')" class="neo-btn" style="padding: 10px 5px; font-size: 0.75rem;">프라이빛</button>
+        </div>
+        
+        <div id="status-display" class="neo-inset-panel" style="width: auto; margin: 15px 0; padding: 10px; font-size: 0.8rem;">
+            모드를 선택해 주세요.
+        </div>
+
+        <button id="join-btn" style="margin-top: 10px;">시스템 접속</button>
     </div>
 </div>
+
+
 
 <div id="unlock"><h1>WIKI-ROUTER v5.2</h1><p>[터치하여 오디오 엔진 가동]</p></div>
 
