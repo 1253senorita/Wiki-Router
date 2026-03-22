@@ -1,0 +1,14 @@
+name: neon-wiki-router-v5
+app: node@16
+options:
+  env:
+    - name: DATABASE_URL
+      value: postgresql://neondb_owner:npg_DzJ2TpuPvUS0@ep-odd-queen-a1qr2or1-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+  ports: 3000
+  buildenv: []
+resources:
+  spot: true
+context:
+  git:
+    url: https://github.com/1253senorita/neon-wiki-router-v5.git
+  preset: node
