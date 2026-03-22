@@ -6,13 +6,23 @@ const USER_MODES = {
 };
 
 io.on('connection', (socket) => {
-    socket.on('get_oi', (id) => {
-        const modeData = USER_MODES[id];
+    // 클라이언트에서 객체 형태로 데이터를 보냄 { userId, modeId }
+    socket.on('get_oi', (data) => {
+        const { userId, modeId } = data;
+        const modeData = USER_MODES[modeId];
+
         if (modeData) {
-            // 성공 시 페이로드와 함께 응답
+            // 해당 소켓을 특정 모드의 '룸'에 자동으로 조인시킬 수도 있습니다.
+            socket.join(modeId); 
+
             socket.emit('oi_response', { 
                 success: true, 
-                payload: { text: modeData.text, level: modeData.accessLevel } 
+                userId: userId,
+                modeId: modeId,
+                payload: { 
+                    text: `${userId}님, ${modeData.text}`, 
+                    level: modeData.accessLevel 
+                } 
             });
         } else {
             socket.emit('oi_response', { success: false });

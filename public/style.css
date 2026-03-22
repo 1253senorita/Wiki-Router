@@ -1,0 +1,87 @@
+
+  
+        /* [기존 디자인 값 유지] */
+        :root { --bg: #e0e5ec; --dark: #1a1a1a; --bear: #ff4757; --peng: #3498db; }
+        body { margin: 0; background: var(--bg); font-family: 'Malgun Gothic', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .main-app { display: flex; flex: 1; padding: 20px; gap: 20px; overflow: hidden; flex-wrap: wrap; }
+        .card { flex: 1; min-width: 300px; border-radius: 35px; display: flex; flex-direction: column; box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff; overflow: hidden; background: var(--bg); }
+        .bear-box { background: var(--dark); border: 3px solid #333; }
+        .v-zone { flex: 1; background: #000; margin: 20px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px #000; }
+        .vu { display: flex; align-items: flex-end; gap: 5px; height: 50px; }
+        .bar { width: 10px; height: 6px; background: var(--bear); border-radius: 2px; transition: height 0.1s ease; box-shadow: 0 0 10px var(--bear); }
+        .b-btn-zone { height: 180px; display: flex; justify-content: center; align-items: center; }
+        .b-btn { width: 130px; height: 130px; border-radius: 50%; border: none; background: linear-gradient(145deg, #ff4b2b, #ff416c); color: white; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4); font-size: 1.2rem; transition: 0.1s; }
+        #p-trig { width: 200px; height: 200px; border-radius: 50%; border: 12px solid #e0e5ec; background: #e0e5ec; box-shadow: 18px 18px 36px #bebebe, -18px -18px 36px #ffffff; cursor: pointer; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; outline: none; transition: 0.1s; }
+        #p-trig:active { box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff; transform: scale(0.95); }
+        .logs { flex: 1; background: rgba(255,255,255,0.4); border-radius: 25px; padding: 15px; margin: 15px; overflow-y: auto; font-size: 0.9rem; border: 1px solid #ccc; box-shadow: inset 4px 4px 10px #bebebe; }
+        .msg { background: #e0e5ec; padding: 12px; border-radius: 18px; margin-bottom: 10px; box-shadow: 5px 5px 10px #bebebe; border-left: 6px solid var(--peng); }
+        #unlock { position: fixed; inset: 0; background: radial-gradient(circle, #2c3e50, #000); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ffeb3b; cursor: pointer; }
+
+        /* --- 중앙 즉시 반응형 스위치 디자인 유지 --- */
+        .switch-container { padding: 20px; background: rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; }
+        .slide-track { position: relative; width: 120px; height: 50px; background: #2c3e50; border-radius: 25px; cursor: pointer; border: 2px solid #444; overflow: hidden; }
+        .slide-handle { position: absolute; left: 70px; top: 3px; width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 2px 2px 5px rgba(0,0,0,0.3); pointer-events: none; }
+        .slide-fill { position: absolute; width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
+
+        /* --- [신규] 독립 가입 화면 스타일 --- */
+        #auth-screen {
+            position: fixed; inset: 0; z-index: 2000; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .auth-box {
+            background: var(--bg); padding: 40px; border-radius: 40px;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            text-align: center; width: 280px;
+        }
+        .auth-box input {
+            width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 20px;
+            background: var(--bg); box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
+            outline: none; box-sizing: border-box;
+        }
+        #join-btn {
+            width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 20px;
+            background: var(--bear); color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+        }
+ 
+
+/* 가입 화면 제목 */
+.auth-title {
+    color: var(--dark);
+    margin-bottom: 25px;
+    font-size: 2.5rem;
+}
+
+/* 버튼들을 가로로 정렬 */
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* 모드 선택 버튼 디자인 */
+.neo-btn {
+    padding: 10px 5px;
+    font-size: 0.75rem;
+    border: none;
+    border-radius: 15px;
+    background: var(--bg);
+    box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff;
+    cursor: pointer;
+}
+
+/* 상태 표시 판넬 */
+.status-panel {
+    width: auto;
+    margin: 15px 0;
+    padding: 10px;
+    font-size: 0.8rem;
+    background: var(--bg);
+    box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+    border-radius: 15px;
+}
+#join-btn { margin-top: 20px; }
+
+

@@ -67,6 +67,15 @@ io.on('connection', (socket) => {
         });
     });
 
+// 서버의 io.on('connection', ...) 내부에 추가
+socket.on('join-room', (roomId) => {
+    socket.join(roomId); // 실제로 소켓을 해당 방에 넣음
+    console.log(`🏠 [ROOM_JOIN] 유저(${socket.id}) -> 방: [${roomId}]`);
+});
+
+
+
+
     // 🗑️ EV: 전체 삭제 신호
     socket.on('clear-logs-signal', () => {
         if (fs.existsSync(recDir)) {
