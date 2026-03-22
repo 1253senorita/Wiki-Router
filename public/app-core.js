@@ -10,45 +10,58 @@
     const joinBtn = document.getElementById('join-btn');
     let selectedModeId = null;
 
-    // 1. 모드 선택 시 서버에 권한 요청
+// 1. 모드 선택 시 서버에 권한 요청 (ID + PW + Mode 전송)
     function selectMode(id) {
         const idVal = document.getElementById('join-id').value;
-        if (!idVal.trim()) {
-            alert("🍎 먼저 ID를 입력해 주세요!");
+        const pwVal = document.getElementById('join-pw').value; // 🔥 추가: PW 입력값 읽기
+
+        if (!idVal.trim() || !pwVal.trim()) {
+            alert("🍎 ID와 비밀번호를 모두 입력해 주세요!");
             return;
         }
+
         selectedModeId = id;
         const statusDisplay = document.getElementById('status-display');
         if (statusDisplay) {
-            statusDisplay.innerText = "🍎 권한 검증 중...";
+            statusDisplay.innerText = "🍎 보안 검증 중...";
         }
-        // 서버로 ID와 모드 전송
-        socket.emit('get_oi', { userId: idVal, modeId: id });
+
+        // 🔥 서버로 ID, PW, 선택한 모드를 한꺼번에 전송
+        socket.emit('get_oi', { 
+            userId: idVal, 
+            userPw: pwVal, // 비밀번호 데이터 포함
+            modeId: id 
+        });
     }
 
-    // 2. 서버 응답 처리 (인증 결과)
+    // 2. 서버 응답 처리 (인증 결과에 따른 버튼 활성화)
     socket.on('oi_response', (res) => {
         const statusDisplay = document.getElementById('status-display');
+        const joinBtn = document.getElementById('join-btn'); // 버튼 변수 확인
+
         if (res.success) {
+            // 인증 성공 시
             if (statusDisplay) {
-                statusDisplay.innerText = `🍎 ${res.payload.text}`;
+                statusDisplay.innerText = `✅ ${res.payload.text}`;
                 statusDisplay.style.color = "var(--peng)";
             }
+            // 버튼 잠금 해제 및 디자인 변경
             joinBtn.disabled = false;
             joinBtn.style.background = "var(--peng)";
+            joinBtn.style.cursor = "pointer";
             joinBtn.innerText = "🍎 시스템 접속 시작";
         } else {
+            // 인증 실패 시 (비밀번호 틀림 등)
             if (statusDisplay) {
-                statusDisplay.innerText = "❌ 접근 권한이 없습니다.";
+                statusDisplay.innerText = "❌ 인증 실패: 정보를 확인하세요.";
                 statusDisplay.style.color = "var(--bear)";
             }
+            // 버튼 다시 잠금
             joinBtn.disabled = true;
             joinBtn.style.background = "var(--bear)";
+            joinBtn.innerText = "접속 불가";
         }
     });
-
-
-
 
 
 

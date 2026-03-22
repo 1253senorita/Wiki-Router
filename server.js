@@ -34,6 +34,10 @@ function rotateLogs() {
     } catch (e) {}
 }
 
+
+
+
+
 /* [SIO_S(📡📡📡)] 소켓 서버 로직 */
 io.on('connection', (socket) => {
     const penguinId = socket.id.substring(0, 5);
@@ -52,26 +56,69 @@ io.on('connection', (socket) => {
         socket.emit('peer-list', Array.from(peerList));
     });
 
-    // 🐧 PENG: 무전기 음성 파일 동기화
+    // 🐧 PENG: 무전기 음성 파일 동기화 (방별 격리 버전)
     socket.on('sync-audio-file', (data) => {
         if (!data || !data.blob) return;
-        
-        socket.broadcast.emit('receive-sync-audio', { 
-            blob: data.blob, 
-            id: penguinId 
-        });
 
-        const fName = `voice_${penguinId}_${Date.now()}.webm`;
+        // 1. 현재 소켓이 속한 방 찾기 (ID 제외)
+        const currentRoom = Array.from(socket.rooms).find(r => r !== socket.id);
+
+        if (currentRoom) {
+            // 2. 🔥 같은 방에 있는 사람들에게만 전송!
+            socket.to(currentRoom).emit('receive-sync-audio', { 
+                blob: data.blob, 
+                id: penguinId 
+            });
+            console.log(`🎤 [AUDIO_SYNC] ${penguinId} -> 방: [${currentRoom}]`);
+        } else {
+            // 방에 속하지 않은 경우 (기본 로비 전송 혹은 무시)
+            console.log(`⚠️ [AUDIO_SKIP] ${penguinId} 유저가 방에 참여하지 않았습니다.`);
+        }
+
+        // 3. 파일 저장 시스템 (방 이름별로 저장하고 싶다면 경로에 포함 가능)
+        const fName = `voice_${currentRoom || 'lobby'}_${penguinId}_${Date.now()}.webm`;
         fs.writeFile(path.join(recDir, fName), Buffer.from(data.blob), (err) => {
             if (!err) rotateLogs();
         });
     });
+// 🔐 [ADD] ID 및 비밀번호 검증 (클라이언트의 selectMode에 대응)
+    socket.on('get_oi', (data) => {
+        const { userId, userPw, modeId } = data;
+        let isSuccess = false;
+        let message = "";
 
-// 서버의 io.on('connection', ...) 내부에 추가
-socket.on('join-room', (roomId) => {
-    socket.join(roomId); // 실제로 소켓을 해당 방에 넣음
-    console.log(`🏠 [ROOM_JOIN] 유저(${socket.id}) -> 방: [${roomId}]`);
-});
+        // 방 모드별 비밀번호 설정 (원하는 대로 수정하세요)
+        const PASSWORDS = {
+            'DEV_MASTER': '1234',   // 호텔객실
+            'GUEST_USER': '0000',   // 일반룸
+            'NORMAL_USER': '1111'   // 프라이빛
+        };
+
+        // 검증 시작
+        if (PASSWORDS[modeId] && userPw === PASSWORDS[modeId]) {
+            isSuccess = true;
+            message = `${userId}님, [${modeId}] 접속 승인 완료!`;
+            console.log(`✅ [AUTH_SUCCESS] ${userId} -> ${modeId}`);
+        } else {
+            isSuccess = false;
+            message = "❌ 정보가 일치하지 않습니다.";
+            console.log(`❌ [AUTH_FAILED] ${userId} -> ${modeId} (Wrong PW)`);
+        }
+
+        // 결과 회신 (클라이언트의 socket.on('oi_response')가 이걸 받음)
+        socket.emit('oi_response', {
+            success: isSuccess,
+            payload: { text: message }
+        });
+    });
+
+    // 🏠 [ADD] 실제 방 입장 로직 (검증 후 최종 버튼 클릭 시)
+    socket.on('join-room', (roomId) => {
+        socket.join(roomId);
+        console.log(`🏠 [ROOM_JOIN] 유저(${socket.id}) -> 방: [${roomId}]`);
+    });
+
+
 
 
 
