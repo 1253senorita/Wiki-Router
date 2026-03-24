@@ -1,9 +1,10 @@
 {
   "name": "wiki-router",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "5.2.0",
+  "description": "WIKI-ROUTER v5.2 CORE ENGINE",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
