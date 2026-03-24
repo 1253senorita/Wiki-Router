@@ -18,7 +18,7 @@ module.exports = function(io) {
             socket.emit('peer-list', Array.from(pengPeers));
         });
 
-        // ❌ 연결 해제 처리
+        // ❌ 연결 해제 
         socket.on('disconnect', () => {
             if (currentId) {
                 pengPeers.delete(currentId);

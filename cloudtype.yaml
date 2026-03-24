@@ -1,4 +1,4 @@
-name: neon-wiki-router-v5
+name: wiki-router
 app: node@16
 options:
   env:
@@ -10,5 +10,6 @@ resources:
   spot: true
 context:
   git:
-    url: https://github.com/1253senorita/neon-wiki-router-v5.git
+    url: https://github.com/1253senorita/Wiki-Router.git
+    branch: 세컨
   preset: node
