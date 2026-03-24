@@ -131,7 +131,11 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = 3000;
+// 수정 전
+server.listen(3000, 'localhost', () => { ... });
+
+// 수정 후 (Cloudtype 환경에 맞게)
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 [WIKI-ROUTER v5.2] ONLINE: http://localhost:${PORT}`);
+    console.log(`🚀 [WIKI-ROUTER v5.2] ONLINE: Port ${PORT}`);
 });
