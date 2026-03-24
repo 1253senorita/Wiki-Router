@@ -48,25 +48,30 @@
 
 
 
-/* 모바일 드래그 레이아웃 최적화 */
+/* 모바일: 위아래로 길게 늘어나는 레이아웃 최적화 */
 @media (max-width: 768px) {
+    body {
+        overflow-y: auto; /* 전체 페이지 세로 스크롤 허용 */
+        height: auto;     /* 높이 제한 해제 */
+    }
+
     .main-app {
         display: flex !important;
-        flex-wrap: nowrap !important; /* 카드가 아래로 떨어지지 않게 고정 */
-        width: 100%;
-        gap: 30px; /* script.js의 cardWidth 계산과 일치해야 함 */
-        padding: 15px;
-        transition: transform 0.4s ease-out;
-        overflow: visible; /* 슬라이드되는 카드가 보이도록 설정 */
+        flex-direction: column !important; /* 카드를 위아래로 쌓기 */
+        width: auto;
+        gap: 40px;        /* 카드 사이 간격 넉넉히 */
+        padding: 20px;
+        overflow: visible; /* 잘리지 않게 설정 */
+        transform: none !important; /* 스크립트의 좌우 이동 간섭 차단 */
     }
 
     .card {
-        flex: 0 0 calc(100vw - 30px); /* 화면 너비에 맞게 카드 크기 강제 */
-        max-width: calc(100vw - 30px);
-        min-width: calc(100vw - 30px);
+        flex: none;       /* 크기 고정 해제 */
+        width: 100%;      /* 가로 폭 꽉 채우기 */
+        min-height: 450px;/* 카드가 너무 찌그러지지 않게 최소 높이 지정 */
+        margin-bottom: 20px;
     }
 }
-
 
 
 

@@ -5,33 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+   
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
 <div id="auth-screen">
     <div class="auth-box">
         <h1 class="auth-title">JOIN 🍎</h1>
-        
         <input type="text" id="join-id" placeholder="ID 입력" value="DEV_MASTER">
         <input type="password" id="join-pw" placeholder="PW 입력" value="1234">
-
         <div class="button-group">
             <button onclick="selectMode('DEV_MASTER')" class="neo-btn">호텔객실</button>
             <button onclick="selectMode('GUEST_USER')" class="neo-btn">일반룸</button>
             <button onclick="selectMode('NORMAL_USER')" class="neo-btn">프라이빛</button>
         </div>
-        
-        <div id="status-display" class="status-panel">
-            모드를 선택해 주세요.
-        </div>
-
+        <div id="status-display" class="status-panel">모드를 선택해 주세요.</div>
         <button id="join-btn" disabled>시스템 접속</button>
     </div>
 </div>
+
 <div id="unlock">
     <h1>WIKI-ROUTER v5.2</h1>
     <p>[터치하여 오디오 활성화]</p>
@@ -43,9 +37,7 @@
 </header>
 
 <main class="main-app">
-
-
-<section class="card">
+    <section class="card">
         <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
             <span>🐧 PENG: SYNC PTT</span>
             <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
@@ -55,7 +47,6 @@
         </div>
         <div class="logs" id="l-box"></div>
     </section>
-
 
     <section class="card bear-box">
         <div class="v-zone">
@@ -76,17 +67,16 @@
             <div id="slider-text" style="color: #888; font-size: 0.7rem; margin-top: 8px;">INSTANT SWITCH</div>
         </div>
     </section>
-
-    
 </main>
 
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
 
-<script src="app-core.js"></script>
-
-<script src="script.js"></script>
 
 
+<script src="/js/app-core.js"></script>
+<script src="/js/script.js"></script>
 
 </body>
 </html>
