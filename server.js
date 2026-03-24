@@ -134,20 +134,20 @@ io.on('connection', (socket) => {
 /* [SYSTEM(🚀🚀🚀)] 서버 구동 및 환경 최적화 */
 const PORT = process.env.PORT || 8080;
 
-// Cloudtype 및 컨테이너 환경을 위해 '0.0.0.0' 바인딩을 강제합니다.
 server.listen(PORT, '0.0.0.0', () => {
+    // 💡 로그에 찍히는 주소만 사람이 이해하기 쉬운 주소로 바꿉니다.
+    const displayAddr = process.env.NODE_ENV === 'production' ? 'Cloudtype URL' : `http://localhost:${PORT}`;
+
     console.log(`
     ================================================
     🚀 [WIKI-ROUTER v5.2] CORE ENGINE ONLINE
     📡 MODE: ${process.env.NODE_ENV || 'development'}
-    🌐 URL: http://0.0.0.0:${PORT}
+    🌐 URL: ${displayAddr}  <-- 💡 이 부분이 핵심!
     📂 REC_DIR: ${recDir}
     ✅ PORT BINDING: SUCCESS (INTERNAL: ${PORT})
     ================================================
     `);
-});
-
-/* [ERROR_HANDLING(⚠️⚠️⚠️)] */
+});/* [ERROR_HANDLING(⚠️⚠️⚠️)] */
 process.on('uncaughtException', (err) => {
     console.error('🔴 [CRITICAL_ERROR] 서버 중단 방어:', err);
 });
