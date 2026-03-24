@@ -8,7 +8,7 @@
         .card { flex: 1; min-width: 300px; border-radius: 35px; display: flex; flex-direction: column; box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff; overflow: hidden; background: var(--bg); }
         .bear-box { background: var(--dark); border: 3px solid #333; }
         .v-zone { flex: 1; background: #000; margin: 20px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px #000; }
-        .vu { display: flex; align-items: flex-end; gap: 5px; height: 50px; }
+        .vu { display: flex; align-items: flex-end; gap: 5px; height: 30px; }
         .bar { width: 10px; height: 6px; background: var(--bear); border-radius: 2px; transition: height 0.1s ease; box-shadow: 0 0 10px var(--bear); }
         .b-btn-zone { height: 180px; display: flex; justify-content: center; align-items: center; }
         .b-btn { width: 130px; height: 130px; border-radius: 50%; border: none; background: linear-gradient(145deg, #ff4b2b, #ff416c); color: white; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4); font-size: 1.2rem; transition: 0.1s; }
@@ -45,6 +45,59 @@
             box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
         }
  
+
+
+
+/* 모바일 드래그 레이아웃 최적화 */
+@media (max-width: 768px) {
+    .main-app {
+        display: flex !important;
+        flex-wrap: nowrap !important; /* 카드가 아래로 떨어지지 않게 고정 */
+        width: 100%;
+        gap: 30px; /* script.js의 cardWidth 계산과 일치해야 함 */
+        padding: 15px;
+        transition: transform 0.4s ease-out;
+        overflow: visible; /* 슬라이드되는 카드가 보이도록 설정 */
+    }
+
+    .card {
+        flex: 0 0 calc(100vw - 30px); /* 화면 너비에 맞게 카드 크기 강제 */
+        max-width: calc(100vw - 30px);
+        min-width: calc(100vw - 30px);
+    }
+}
+
+
+
+
+/* 드래그 중일 때 커서 모양 */
+.main-app:active { cursor: grabbing; }
+
+/* 하단 페이지 인디케이터 (선택 사항) */
+.nav-dots {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+.dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #bebebe;
+    transition: 0.3s;
+}
+.dot.active {
+    background: var(--peng);
+    width: 25px;
+    border-radius: 10px;
+}
+
+
+
+
 
 /* 가입 화면 제목 */
 .auth-title {

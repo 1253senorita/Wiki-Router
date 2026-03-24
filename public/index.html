@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <title>WIKI-ROUTER 🍎 v5.2</title>
+    <title>WIKI-ROUTER 🍎 v06.3.24</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -43,6 +43,20 @@
 </header>
 
 <main class="main-app">
+
+
+<section class="card">
+        <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
+            <span>🐧 PENG: SYNC PTT</span>
+            <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
+        </div>
+        <div class="p-btn-zone" style="height: 250px; display: flex; justify-content: center; align-items: center;">
+            <button id="p-trig"><span style="font-size:5rem;">🐧</span></button>
+        </div>
+        <div class="logs" id="l-box"></div>
+    </section>
+
+
     <section class="card bear-box">
         <div class="v-zone">
             <div class="vu">
@@ -63,19 +77,16 @@
         </div>
     </section>
 
-    <section class="card">
-        <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
-            <span>🐧 PENG: SYNC PTT</span>
-            <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
-        </div>
-        <div class="p-btn-zone" style="height: 250px; display: flex; justify-content: center; align-items: center;">
-            <button id="p-trig"><span style="font-size:5rem;">🐧</span></button>
-        </div>
-        <div class="logs" id="l-box"></div>
-    </section>
+    
 </main>
 
+
+
 <script src="app-core.js"></script>
+
+<script src="script.js"></script>
+
+
 
 </body>
 </html>

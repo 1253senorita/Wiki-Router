@@ -131,11 +131,24 @@ io.on('connection', (socket) => {
     });
 });
 
-// 수정 전
-server.listen(3000, 'localhost', () => { ... });
-
-// 수정 후 (Cloudtype 환경에 맞게)
+/* [SYSTEM(🚀🚀🚀)] 서버 구동 및 환경 최적화 */
 const PORT = process.env.PORT || 3000;
+
+// 로컬 테스트 시에는 'localhost', 배포 시에는 '0.0.0.0'을 자동으로 선택하도록 구성 가능합니다.
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 [WIKI-ROUTER v5.2] ONLINE: Port ${PORT}`);
+    console.log(`
+    ================================================
+    🚀 [WIKI-ROUTER v5.2] CORE ENGINE ONLINE
+    📡 MODE: ${process.env.NODE_ENV || 'development'}
+    🌐 URL: http://localhost:${PORT}
+    📂 REC_DIR: ${recDir}
+    ================================================
+    `);
+});
+
+/* [ERROR_HANDLING(⚠️⚠️⚠️)] */
+process.on('uncaughtException', (err) => {
+    console.error('🔴 [CRITICAL_ERROR] 서버가 예기치 않게 중단될 뻔했습니다:', err);
 });
