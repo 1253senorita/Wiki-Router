@@ -1,145 +1,242 @@
-
-  
-        /* [기존 디자인 값 유지] */
-        :root { --bg: #e0e5ec; --dark: #1a1a1a; --bear: #ff4757; --peng: #3498db; }
-        body { margin: 0; background: var(--bg); font-family: 'Malgun Gothic', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { height: 60px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .main-app { display: flex; flex: 1; padding: 20px; gap: 20px; overflow: hidden; flex-wrap: wrap; }
-        .card { flex: 1; min-width: 300px; border-radius: 35px; display: flex; flex-direction: column; box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff; overflow: hidden; background: var(--bg); }
-        .bear-box { background: var(--dark); border: 3px solid #333; }
-        .v-zone { flex: 1; background: #000; margin: 20px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px #000; }
-        .vu { display: flex; align-items: flex-end; gap: 5px; height: 30px; }
-        .bar { width: 10px; height: 6px; background: var(--bear); border-radius: 2px; transition: height 0.1s ease; box-shadow: 0 0 10px var(--bear); }
-        .b-btn-zone { height: 180px; display: flex; justify-content: center; align-items: center; }
-        .b-btn { width: 130px; height: 130px; border-radius: 50%; border: none; background: linear-gradient(145deg, #ff4b2b, #ff416c); color: white; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4); font-size: 1.2rem; transition: 0.1s; }
-        #p-trig { width: 200px; height: 200px; border-radius: 50%; border: 12px solid #e0e5ec; background: #e0e5ec; box-shadow: 18px 18px 36px #bebebe, -18px -18px 36px #ffffff; cursor: pointer; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; outline: none; transition: 0.1s; }
-        #p-trig:active { box-shadow: inset 10px 10px 20px #bebebe, inset -10px -10px 20px #ffffff; transform: scale(0.95); }
-        .logs { flex: 1; background: rgba(255,255,255,0.4); border-radius: 25px; padding: 15px; margin: 15px; overflow-y: auto; font-size: 0.9rem; border: 1px solid #ccc; box-shadow: inset 4px 4px 10px #bebebe; }
-        .msg { background: #e0e5ec; padding: 12px; border-radius: 18px; margin-bottom: 10px; box-shadow: 5px 5px 10px #bebebe; border-left: 6px solid var(--peng); }
-        #unlock { position: fixed; inset: 0; background: radial-gradient(circle, #2c3e50, #000); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; color: #ffeb3b; cursor: pointer; }
-
-        /* --- 중앙 즉시 반응형 스위치 디자인 유지 --- */
-        .switch-container { padding: 20px; background: rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; }
-        .slide-track { position: relative; width: 120px; height: 50px; background: #2c3e50; border-radius: 25px; cursor: pointer; border: 2px solid #444; overflow: hidden; }
-        .slide-handle { position: absolute; left: 70px; top: 3px; width: 40px; height: 40px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 2px 2px 5px rgba(0,0,0,0.3); pointer-events: none; }
-        .slide-fill { position: absolute; width: 100%; height: 100%; background: #2ecc71; transition: 0.3s; }
-
-        /* --- [신규] 독립 가입 화면 스타일 --- */
-        #auth-screen {
-            position: fixed; inset: 0; z-index: 2000; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .auth-box {
-            background: var(--bg); padding: 40px; border-radius: 40px;
-            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
-            text-align: center; width: 280px;
-        }
-        .auth-box input {
-            width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 20px;
-            background: var(--bg); box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
-            outline: none; box-sizing: border-box;
-        }
-        #join-btn {
-            width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 20px;
-            background: var(--bear); color: white; font-weight: bold; cursor: pointer;
-            box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
-        }
- 
-
-
-
-/* 모바일: 위아래로 길게 늘어나는 레이아웃 최적화 */
-@media (max-width: 768px) {
-    body {
-        overflow-y: auto; /* 전체 페이지 세로 스크롤 허용 */
-        height: auto;     /* 높이 제한 해제 */
-    }
-
-    .main-app {
-        display: flex !important;
-        flex-direction: column !important; /* 카드를 위아래로 쌓기 */
-        width: auto;
-        gap: 40px;        /* 카드 사이 간격 넉넉히 */
-        padding: 20px;
-        overflow: visible; /* 잘리지 않게 설정 */
-        transform: none !important; /* 스크립트의 좌우 이동 간섭 차단 */
-    }
-
-    .card {
-        flex: none;       /* 크기 고정 해제 */
-        width: 100%;      /* 가로 폭 꽉 채우기 */
-        min-height: 450px;/* 카드가 너무 찌그러지지 않게 최소 높이 지정 */
-        margin-bottom: 20px;
-    }
+/* ============================= */
+/* 🔥 기본 설정 (모바일 퍼스트) */
+/* ============================= */
+:root {
+--bg: #e0e5ec;
+--dark: #1a1a1a;
+--bear: #ff4757;
+--peng: #3498db;
 }
 
-
-
-/* 드래그 중일 때 커서 모양 */
-.main-app:active { cursor: grabbing; }
-
-/* 하단 페이지 인디케이터 (선택 사항) */
-.nav-dots {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 100;
-}
-.dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #bebebe;
-    transition: 0.3s;
-}
-.dot.active {
-    background: var(--peng);
-    width: 25px;
-    border-radius: 10px;
+html, body {
+margin: 0;
+padding: 0;
+height: 100dvh; /* 🔥 vh → dvh */
+overflow: hidden;
+background: var(--bg);
+font-family: 'Malgun Gothic', sans-serif;
 }
 
-
-
-
-
-/* 가입 화면 제목 */
-.auth-title {
-    color: var(--dark);
-    margin-bottom: 25px;
-    font-size: 2.5rem;
+/* ============================= */
+/* 🔝 상단 */
+/* ============================= */
+header {
+height: 60px;
+flex-shrink: 0;
+background: #2c3e50;
+color: white;
+display: flex;
+align-items: center;
+padding: 0 20px;
+justify-content: space-between;
 }
 
-/* 버튼들을 가로로 정렬 */
+/* ============================= */
+/* 📱 메인 앱 */
+/* ============================= */
+.main-app {
+flex: 1;
+display: flex;
+flex-direction: column; /* 🔥 무조건 세로 */
+overflow: hidden;
+padding: 10px;
+gap: 15px;
+}
+
+/* ============================= */
+/* 📦 카드 */
+/* ============================= */
+.card {
+flex-shrink: 0;
+width: 100%;
+border-radius: 25px;
+display: flex;
+flex-direction: column;
+background: var(--bg);
+box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
+
+```
+/* 🔥 핵심 */
+max-height: 45dvh;
+overflow: hidden;
+```
+
+}
+
+/* 내부 스크롤 */
+.card > *:last-child {
+overflow-y: auto;
+}
+
+/* ============================= */
+/* 🐻 bear */
+/* ============================= */
+.bear-box {
+background: var(--dark);
+border: 3px solid #333;
+}
+
+/* ============================= */
+/* 🔊 VU */
+/* ============================= */
+.v-zone {
+background: #000;
+margin: 15px;
+border-radius: 20px;
+padding: 15px;
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+.vu {
+display: flex;
+gap: 5px;
+}
+
+.bar {
+width: 8px;
+height: 6px;
+background: var(--bear);
+}
+
+/* ============================= */
+/* 🔘 버튼 */
+/* ============================= */
+.b-btn {
+width: 110px;
+height: 110px;
+border-radius: 50%;
+border: none;
+background: linear-gradient(145deg, #ff4b2b, #ff416c);
+color: white;
+font-weight: bold;
+margin: 20px auto;
+}
+
+#p-trig {
+width: 45vw;
+height: 45vw;
+max-width: 180px;
+max-height: 180px;
+min-width: 110px;
+min-height: 110px;
+
+```
+border-radius: 50%;
+border: 10px solid var(--bg);
+background: var(--bg);
+box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
+```
+
+}
+
+/* ============================= */
+/* 📜 로그 */
+/* ============================= */
+.logs {
+margin: 10px;
+padding: 10px;
+border-radius: 15px;
+background: rgba(255,255,255,0.4);
+
+```
+max-height: 20dvh;
+overflow-y: auto;
+font-size: 0.85rem;
+```
+
+}
+
+/* ============================= */
+/* 🔐 로그인 */
+/* ============================= */
+#auth-screen {
+position: fixed;
+inset: 0;
+z-index: 2000;
+background: var(--bg);
+
+```
+display: flex;
+justify-content: center;
+align-items: center;
+```
+
+}
+
+.auth-box {
+width: 90%;
+max-width: 320px;
+padding: 25px;
+border-radius: 30px;
+text-align: center;
+
+```
+box-shadow: 15px 15px 40px #bebebe, -15px -15px 40px #ffffff;
+```
+
+}
+
+.auth-box input {
+width: 100%;
+padding: 12px;
+margin: 8px 0;
+border-radius: 15px;
+border: none;
+background: var(--bg);
+box-shadow: inset 5px 5px 10px #bebebe;
+}
+
+#join-btn {
+width: 100%;
+padding: 12px;
+margin-top: 15px;
+border-radius: 15px;
+border: none;
+background: var(--bear);
+color: white;
+}
+
+/* ============================= */
+/* 🎛 버튼 그룹 */
+/* ============================= */
 .button-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    margin: 20px 0;
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+gap: 8px;
 }
 
-/* 모드 선택 버튼 디자인 */
 .neo-btn {
-    padding: 10px 5px;
-    font-size: 0.75rem;
-    border: none;
-    border-radius: 15px;
-    background: var(--bg);
-    box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff;
-    cursor: pointer;
+padding: 8px;
+font-size: 0.7rem;
+border-radius: 10px;
+border: none;
 }
 
-/* 상태 표시 판넬 */
+/* ============================= */
+/* 📊 상태 */
+/* ============================= */
 .status-panel {
-    width: auto;
-    margin: 15px 0;
-    padding: 10px;
-    font-size: 0.8rem;
-    background: var(--bg);
-    box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
-    border-radius: 15px;
+margin-top: 10px;
+padding: 8px;
+border-radius: 10px;
+font-size: 0.75rem;
 }
-#join-btn { margin-top: 20px; }
 
+/* ============================= */
+/* 📱 작은 폰 대응 */
+/* ============================= */
+@media (max-height: 650px) {
+.card {
+max-height: none;
+}
 
+```
+#p-trig {
+    width: 100px;
+    height: 100px;
+}
+```
+
+}
