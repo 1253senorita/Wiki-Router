@@ -3,78 +3,155 @@
 <head>
     <title>WIKI-ROUTER 🍎 v06.3.24</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-   
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="stylesheet" href="/css/style.css?v=20260324.01">
+    <style>
+        /* --- [App Shell Framework CSS] --- */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        
+        /* 전체 프레임 구조 */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* 고정 상단 영역 (Header 고정) */
+        .shell-top {
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+
+        /* 동적 콘텐츠 영역 (기존 내용이 담기는 곳) */
+        #app-main-viewport {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        /* 하단 네비게이션 쉘 */
+        .shell-bottom-nav {
+            height: 65px;
+            background: #111;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-shrink: 0;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .nav-btn.active { color: #00ff00; }
+        
+        /* 뷰 전환용 (기존 섹션들 제어) */
+        .app-view { display: none; }
+        .app-view.active { display: block; }
+    </style>
 </head>
 <body>
 
-<div id="auth-screen">
-    <div class="auth-box">
-        <h1 class="auth-title">JOIN 🍎</h1>
-        <input type="text" id="join-id" placeholder="ID 입력" value="DEV_MASTER">
-        <input type="password" id="join-pw" placeholder="PW 입력" value="1234">
-        <div class="button-group">
-            <button onclick="selectMode('DEV_MASTER')" class="neo-btn">호텔객실</button>
-            <button onclick="selectMode('GUEST_USER')" class="neo-btn">일반룸</button>
-            <button onclick="selectMode('NORMAL_USER')" class="neo-btn">프라이빛</button>
-        </div>
-        <div id="status-display" class="status-panel">모드를 선택해 주세요.</div>
-        <button id="join-btn" disabled>시스템 접속</button>
+<div id="app-container">
+    
+    <div class="shell-top">
+        <header>
+            <div>📡 WIKI-ROUTER <span style="opacity: 0.7;">INSTANT SYNC</span></div>
+            <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
+        </header>
     </div>
-</div>
 
-<div id="unlock">
-    <h1>WIKI-ROUTER v5.2</h1>
-    <p>[터치하여 오디오 활성화]</p>
-</div>
-
-<header>
-    <div>📡 WIKI-ROUTER <span style="opacity: 0.7;">INSTANT SYNC</span></div>
-    <div id="status" style="color: #00ff00;">💎 SIO_C: STANDBY</div>
-</header>
-
-<main class="main-app">
-    <section class="card">
-        <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
-            <span>🐧 PENG: SYNC PTT</span>
-            <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
-        </div>
-        <div class="p-btn-zone" style="height: 250px; display: flex; justify-content: center; align-items: center;">
-            <button id="p-trig"><span style="font-size:5rem;">🐧</span></button>
-        </div>
-        <div class="logs" id="l-box"></div>
-    </section>
-
-    <section class="card bear-box">
-        <div class="v-zone">
-            <div class="vu">
-                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div id="app-main-viewport">
+        
+        <div id="auth-screen" class="app-view active">
+            <div class="auth-box">
+                <h1 class="auth-title">JOIN 🍎</h1>
+                <input type="text" id="join-id" placeholder="ID 입력" value="DEV_MASTER">
+                <input type="password" id="join-pw" placeholder="PW 입력" value="1234">
+                <div class="button-group">
+                    <button onclick="selectMode('DEV_MASTER')" class="neo-btn">호텔객실</button>
+                    <button onclick="selectMode('GUEST_USER')" class="neo-btn">일반룸</button>
+                    <button onclick="selectMode('NORMAL_USER')" class="neo-btn">프라이빛</button>
+                </div>
+                <div id="status-display" class="status-panel">모드를 선택해 주세요.</div>
+                <button id="join-btn" disabled>시스템 접속</button>
             </div>
-            <div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div>
         </div>
-        <div class="b-btn-zone">
-            <button class="b-btn" id="b-trig">TALK</button>
+
+        <main class="main-app app-view" id="main-app-content">
+            <section class="card">
+                <div style="padding:20px; display:flex; justify-content:space-between; align-items: center;">
+                    <span>🐧 PENG: SYNC PTT</span>
+                    <button id="clear-btn" style="border:none; background:none; cursor:pointer; font-size:1.2rem;">🗑️</button>
+                </div>
+                <div class="p-btn-zone" style="height: 250px; display: flex; justify-content: center; align-items: center;">
+                    <button id="p-trig"><span style="font-size:5rem;">🐧</span></button>
+                </div>
+                <div class="logs" id="l-box"></div>
+            </section>
+
+            <section class="card bear-box">
+                <div class="v-zone">
+                    <div class="vu">
+                        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    </div>
+                    <div id="b-stat" style="color:white; font-size:1.2rem; margin-top:15px; font-weight:bold;">READY</div>
+                </div>
+                <div class="b-btn-zone">
+                    <button class="b-btn" id="b-trig">TALK</button>
+                </div>
+                <div class="switch-container">
+                    <div id="status-sub" style="color: #00ff00; font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;">💎 ONLINE</div>
+                    <div class="slide-track" id="master-switch">
+                        <div id="slide-fill" class="slide-fill"></div>
+                        <div id="slide-handle" class="slide-handle">📞</div>
+                    </div>
+                    <div id="slider-text" style="color: #888; font-size: 0.7rem; margin-top: 8px;">INSTANT SWITCH</div>
+                </div>
+            </section>
+        </main>
+
+        <div id="unlock">
+            <h1>WIKI-ROUTER v5.2</h1>
+            <p>[터치하여 오디오 활성화]</p>
         </div>
-        <div class="switch-container">
-            <div id="status-sub" style="color: #00ff00; font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;">💎 ONLINE</div>
-            <div class="slide-track" id="master-switch">
-                <div id="slide-fill" class="slide-fill"></div>
-                <div id="slide-handle" class="slide-handle">📞</div>
-            </div>
-            <div id="slider-text" style="color: #888; font-size: 0.7rem; margin-top: 8px;">INSTANT SWITCH</div>
-        </div>
-    </section>
-</main>
+    </div>
+
+    <nav class="shell-bottom-nav">
+        <button class="nav-btn active" onclick="showAppView('auth-screen', this)">
+            <span style="font-size:1.4rem;">🔑</span>
+            <span>인증</span>
+        </button>
+        <button class="nav-btn" onclick="showAppView('main-app-content', this)">
+            <span style="font-size:1.4rem;">🎙️</span>
+            <span>PTT</span>
+        </button>
+    </nav>
+</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-
-
-
-
+<script>
+    // App Shell 뷰 전환 함수
+    function showAppView(viewId, btn) {
+        document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>
 <script src="/js/app-core.js"></script>
 <script src="/js/script.js"></script>
 
