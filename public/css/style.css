@@ -1,242 +1,266 @@
 /* ============================= */
-/* 🔥 기본 설정 (모바일 퍼스트) */
+/* 🔥 기본 설정 (WebView 안정화) */
 /* ============================= */
 :root {
---bg: #e0e5ec;
---dark: #1a1a1a;
---bear: #ff4757;
---peng: #3498db;
+    --bg: #e0e5ec;
+    --dark: #1a1a1a;
+    --bear: #ff4757;
+    --peng: #3498db;
+}
+
+/* 🔥 필수 리셋 (추가됨) */
+* {
+    box-sizing: border-box;
 }
 
 html, body {
-margin: 0;
-padding: 0;
-height: 100dvh; /* 🔥 vh → dvh */
-overflow: hidden;
-background: var(--bg);
-font-family: 'Malgun Gothic', sans-serif;
+    margin: 0;
+    padding: 0;
+
+    /* 🔥 vh → dvh + fallback */
+    height: 100vh;
+    height: 100dvh;
+
+    /* 🔥 WebView 핵심 */
+    overflow: hidden;
+
+    background: var(--bg);
+    font-family: 'Malgun Gothic', sans-serif;
+}
+
+/* 🔥 이미지 깨짐 방지 (추가) */
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 /* ============================= */
 /* 🔝 상단 */
 /* ============================= */
 header {
-height: 60px;
-flex-shrink: 0;
-background: #2c3e50;
-color: white;
-display: flex;
-align-items: center;
-padding: 0 20px;
-justify-content: space-between;
+    height: 60px;
+    flex-shrink: 0;
+    background: #2c3e50;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
 }
 
 /* ============================= */
 /* 📱 메인 앱 */
 /* ============================= */
 .main-app {
-flex: 1;
-display: flex;
-flex-direction: column; /* 🔥 무조건 세로 */
-overflow: hidden;
-padding: 10px;
-gap: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    /* 🔥 중요: WebView 스크롤 안정화 */
+    overflow: hidden;
+
+    padding: 10px;
+    gap: 15px;
 }
 
 /* ============================= */
 /* 📦 카드 */
 /* ============================= */
 .card {
-flex-shrink: 0;
-width: 100%;
-border-radius: 25px;
-display: flex;
-flex-direction: column;
-background: var(--bg);
-box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
+    flex-shrink: 0;
+    width: 100%;
 
-```
-/* 🔥 핵심 */
-max-height: 45dvh;
-overflow: hidden;
-```
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
 
+    background: var(--bg);
+    box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
+
+    /* 🔥 핵심 (유지 + 개선) */
+    max-height: 45dvh;
+    overflow: hidden;
 }
 
-/* 내부 스크롤 */
+/* 🔥 내부 스크롤 안정화 */
 .card > *:last-child {
-overflow-y: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS 대응 */
 }
 
 /* ============================= */
 /* 🐻 bear */
 /* ============================= */
 .bear-box {
-background: var(--dark);
-border: 3px solid #333;
+    background: var(--dark);
+    border: 3px solid #333;
 }
 
 /* ============================= */
 /* 🔊 VU */
 /* ============================= */
 .v-zone {
-background: #000;
-margin: 15px;
-border-radius: 20px;
-padding: 15px;
-display: flex;
-flex-direction: column;
-align-items: center;
+    background: #000;
+    margin: 15px;
+    border-radius: 20px;
+    padding: 15px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .vu {
-display: flex;
-gap: 5px;
+    display: flex;
+    gap: 5px;
 }
 
 .bar {
-width: 8px;
-height: 6px;
-background: var(--bear);
+    width: 8px;
+    height: 6px;
+    background: var(--bear);
 }
 
 /* ============================= */
 /* 🔘 버튼 */
 /* ============================= */
 .b-btn {
-width: 110px;
-height: 110px;
-border-radius: 50%;
-border: none;
-background: linear-gradient(145deg, #ff4b2b, #ff416c);
-color: white;
-font-weight: bold;
-margin: 20px auto;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: none;
+
+    background: linear-gradient(145deg, #ff4b2b, #ff416c);
+    color: white;
+    font-weight: bold;
+
+    margin: 20px auto;
 }
 
+/* 🔥 버튼 안정화 */
 #p-trig {
-width: 45vw;
-height: 45vw;
-max-width: 180px;
-max-height: 180px;
-min-width: 110px;
-min-height: 110px;
+    width: 45vw;
+    height: 45vw;
 
-```
-border-radius: 50%;
-border: 10px solid var(--bg);
-background: var(--bg);
-box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
-```
+    max-width: 180px;
+    max-height: 180px;
+    min-width: 110px;
+    min-height: 110px;
 
+    border-radius: 50%;
+    border: 10px solid var(--bg);
+    background: var(--bg);
+
+    box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
 }
 
 /* ============================= */
 /* 📜 로그 */
 /* ============================= */
 .logs {
-margin: 10px;
-padding: 10px;
-border-radius: 15px;
-background: rgba(255,255,255,0.4);
+    margin: 10px;
+    padding: 10px;
+    border-radius: 15px;
 
-```
-max-height: 20dvh;
-overflow-y: auto;
-font-size: 0.85rem;
-```
+    background: rgba(255,255,255,0.4);
 
+    /* 🔥 WebView 안정화 */
+    max-height: 20dvh;
+    overflow-y: auto;
+
+    font-size: 0.85rem;
 }
 
 /* ============================= */
 /* 🔐 로그인 */
 /* ============================= */
 #auth-screen {
-position: fixed;
-inset: 0;
-z-index: 2000;
-background: var(--bg);
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
 
-```
-display: flex;
-justify-content: center;
-align-items: center;
-```
+    background: var(--bg);
 
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .auth-box {
-width: 90%;
-max-width: 320px;
-padding: 25px;
-border-radius: 30px;
-text-align: center;
+    width: 90%;
+    max-width: 320px;
 
-```
-box-shadow: 15px 15px 40px #bebebe, -15px -15px 40px #ffffff;
-```
+    padding: 25px;
+    border-radius: 30px;
+    text-align: center;
 
+    box-shadow: 15px 15px 40px #bebebe, -15px -15px 40px #ffffff;
 }
 
 .auth-box input {
-width: 100%;
-padding: 12px;
-margin: 8px 0;
-border-radius: 15px;
-border: none;
-background: var(--bg);
-box-shadow: inset 5px 5px 10px #bebebe;
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+
+    border-radius: 15px;
+    border: none;
+
+    background: var(--bg);
+    box-shadow: inset 5px 5px 10px #bebebe;
 }
 
 #join-btn {
-width: 100%;
-padding: 12px;
-margin-top: 15px;
-border-radius: 15px;
-border: none;
-background: var(--bear);
-color: white;
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+
+    border-radius: 15px;
+    border: none;
+
+    background: var(--bear);
+    color: white;
 }
 
 /* ============================= */
-/* 🎛 버튼 그룹 */
+/* 🎛 버튼 그룹 (Grid 유지 👍) */
 /* ============================= */
 .button-group {
-display: grid;
-grid-template-columns: 1fr 1fr 1fr;
-gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
 }
 
 .neo-btn {
-padding: 8px;
-font-size: 0.7rem;
-border-radius: 10px;
-border: none;
+    padding: 8px;
+    font-size: 0.7rem;
+    border-radius: 10px;
+    border: none;
 }
 
 /* ============================= */
 /* 📊 상태 */
 /* ============================= */
 .status-panel {
-margin-top: 10px;
-padding: 8px;
-border-radius: 10px;
-font-size: 0.75rem;
+    margin-top: 10px;
+    padding: 8px;
+
+    border-radius: 10px;
+    font-size: 0.75rem;
 }
 
 /* ============================= */
-/* 📱 작은 폰 대응 */
+/* 📱 작은 화면 대응 */
 /* ============================= */
 @media (max-height: 650px) {
-.card {
-max-height: none;
-}
 
-```
-#p-trig {
-    width: 100px;
-    height: 100px;
-}
-```
+    .card {
+        max-height: none;
+    }
 
+    #p-trig {
+        width: 100px;
+        height: 100px;
+    }
 }
