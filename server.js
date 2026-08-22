@@ -61,27 +61,43 @@ io.on('connection', (socket) => {
         io.emit('peer-joined', id);
     });
 
-    socket.on('get-peers', () => {
-        socket.emit('peer-list', Array.from(peerList));
-    });
 
+
+// =========================================================================
+    // 💎 [UPDATE] 오디오 스트림 수신 및 데이터 양방향 검사 로직
+    // =========================================================================
     socket.on('sync-audio-file', (data) => {
-        if (!data || !data.blob) return;
+        if (!data || !data.blob) {
+            console.log("❌ [서버 오류] 받은 오디오 데이터에 blob이 없습니다.");
+            return;
+        }
+        
         const currentRoom = Array.from(socket.rooms).find(r => r !== socket.id);
 
         if (currentRoom) {
+            // 📥 [서버 수신] 클라이언트 A가 보낸 오디오를 서버가 받음
+            console.log(`📥 [서버 수신] ${penguinId}가 방[${currentRoom}]으로 오디오 전송함 (크기: ${data.blob.length || 0} bytes)`);
+
+            // 🔄 [양방향 중계 핵심] 나(보낸 사람)를 제외한 방 안의 다른 클라이언트(클라이언트 B 등)들에게 즉시 쏴줌!
             socket.to(currentRoom).emit('receive-sync-audio', { 
                 blob: data.blob, 
                 id: penguinId 
             });
-            console.log(`🎤 [AUDIO_SYNC] ${penguinId} -> 방: [${currentRoom}]`);
+
+            // 📤 [서버 송신] 다른 유저들에게 브로드캐스트 완료 로그
+            console.log(`📤 [서버 송신] 방[${currentRoom}]의 다른 유저들에게 오디오 브로드캐스트 완료`);
+        } else {
+            console.log(`⚠️ [서버 경고] ${penguinId}가 어떤 방에도 속해있지 않아 오디오를 버립니다.`);
         }
         
+        // (참고) 서버 로컬 폴더에 오디오 파일 백업 저장
         const fName = `voice_${currentRoom || 'lobby'}_${penguinId}_${Date.now()}.webm`;
         fs.writeFile(path.join(recDir, fName), Buffer.from(data.blob), (err) => {
-            if (!err) rotateLogs();
+            if (!err && typeof rotateLogs === 'function') rotateLogs();
         });
     });
+
+
 
     socket.on('get_oi', (data) => {
         const { userId, userPw, modeId } = data;
